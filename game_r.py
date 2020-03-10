@@ -1,43 +1,44 @@
 import numpy as np
 import random
+
 import minimax as ai
 import gui_r as gui
 from math import inf
 
 alpha, beta = -inf, +inf
 
-class Grid():
+class Board():
     def __init__(self):
-        self.grid = np.full((4,4), None)
+        self.board = np.full((4,4), None)
 
     def update(self, x, y, symbol):
-        if(self.grid[x][y] is None):
-            self.grid[x][y] = symbol
-            print(self.grid)
+        if(self.board[x][y] is None):
+            self.board[x][y] = symbol
+            print(self.board)
             return True
-        print("Cell already used!")
+        print("Move not possible")
         return False
 
-    def isMoveAllowed(self, x, y):
-        return self.grid[x][y] is None
+    def possible_moves(self, x, y):
+        return self.board[x][y] is None
 
     def __str__(self):
-        grid = ""
-        for i, row in enumerate(self.grid):
-            grid += "|"
+        board_str = ""
+        for i, row in enumerate(self.board):
+            board_str += "|"
             for j, cell in enumerate(row):
                 if(cell is None):
-                    grid += " -"
+                    board_str += " -"
                 else:
-                    grid += " " + self.grid[i][j]
-            grid += " |\n"
-        return grid
+                    board_str += " " + self.board[i][j]
+            board_str += " |\n"
+        return board_str
 
 class Player():
-    def __init__(self, name, symbole, isAI=False):
+    def __init__(self, name, symbol, AI=False):
         self.name = name
-        self.symbole = symbole
-        self.isAI = isAI
+        self.symbol = symbol
+        self.AI = AI
         self.won_games = 0
         self.draw_games = 0
 
@@ -47,7 +48,7 @@ class Player():
     def __str__(self):
         return self.name
 
-def alignement(board):
+def alignment(board):
     if(board[0][0] == board[0][1] == board[0][2] == board[0][3] != None):  # horizontal
         return True, board[0][0]
     elif(board[1][0] == board[1][1] == board[1][2] == board[1][3] != None):  # horizontal
@@ -91,7 +92,7 @@ def alignement(board):
     # else:
     #     return False, None
 
-def gridFull(grid):
+def is_full(grid):
     for rows in grid:
         for cell in rows:
             if cell is None:
@@ -109,99 +110,103 @@ def empty_cells(state):
     #print(cells)
     return cells
 
-def gameLoop(screen, p1, p2):
+def game_loop(screen, p1, p2):
 
-    def switchPlayer(turn):
+    def next_player(turn):
         if(turn == p1):
             return p2
         return p1
 
-    # Initiliaze the Grid
-    grid = Grid()
+    # Initiliaze the Board
+    board = Board()
 
-    # Choose randomly a player
-    # if(random.randint(1, 2) == 1):
-    #     playerTurn = p1
-    # else:
-    #     playerTurn = p2
+    # Choose random player to start game
+    if(random.randint(1, 2) == 1):
+        playerTurn = p1
+    else:
+        playerTurn = p2
     playerTurn = p2
 
     # Check if player is AI
-    if(playerTurn.isAI):
-            depth = len(empty_cells(grid.grid))
-            if depth == 0:
-                return
-            if depth == 16:
-                x = random.randint(0, 3)
-                y = random.randint(0, 3)
-            else:
-                _, move = ai.minimax(grid.grid, depth,alpha, beta, playerTurn.symbole)
-                x, y = move[0], move[1]
-            print(f"Cell:{(x, y)}")
-            grid.update(x, y, playerTurn.symbole)
-            gui.drawSymbole(screen, (x, y), playerTurn.symbole)
+    if(playerTurn.AI):
+        depth = len(empty_cells(board.board))
+        if depth == 0:
+            return
+        if depth == 16:
+            x = random.randint(0, 3)
+            y = random.randint(0,3)
+        else:
+            _, move = ai.minimax(board.board, depth,alpha, beta, playerTurn.symbol)
+            x, y = move[0], move[1]
+            if x == y == 4:
+                return 0
+        print(f"Cell:{(x, y)}")
+        board.update(x, y, playerTurn.symbol)
+        gui.drawSymbole(screen, (x, y), playerTurn.symbol)
 
     else:
         # Get player input
         x, y = gui.playerInput(screen)
         # Check if the cell is not already used
-        while not grid.isMoveAllowed(x, y):
+        while not board.possible_moves(x, y):
             x, y = gui.playerInput(screen)
         print(f"Cell:{(x, y)}")
-        grid.update(x, y, playerTurn.symbole)
-        gui.drawSymbole(screen, (x, y), playerTurn.symbole)
+        board.update(x, y, playerTurn.symbol)
+        gui.drawSymbole(screen, (x, y), playerTurn.symbol)
 
-    aligned, _ = alignement(grid.grid)
-    while(not aligned and not gridFull(grid.grid)):
+    aligned, _ = alignment(board.board)
+    while(not aligned and not is_full(board.board)):
         # Switch player
-        playerTurn = switchPlayer(playerTurn)
+        playerTurn = next_player(playerTurn)
 
         # Check if player is AI
-        if(playerTurn.isAI):
-            depth = len(empty_cells(grid.grid))
+        if(playerTurn.AI):
+            depth = len(empty_cells(board.board))
             if depth == 0:
                 return
             if depth == 16:
                 x = random.randint(0, 3)
-                y = random.randint(0, 3)
+                y = random.randint(0,3)
             else:
-                _, move = ai.minimax(grid.grid, depth, alpha, beta, playerTurn.symbole)
+                _, move = ai.minimax(board.board, depth, alpha, beta, playerTurn.symbol)
                 x, y = move[0], move[1]
+                if x == y == 4:
+                    return 0
             print(f"Cell:{(x, y)}")
-            grid.update(x, y, playerTurn.symbole)
-            gui.drawSymbole(screen, (x,y), playerTurn.symbole)
+            board.update(x, y, playerTurn.symbol)
+            gui.drawSymbole(screen, (x,y), playerTurn.symbol)
         else:
             # Get player input
             x, y = gui.playerInput(screen)
             # Check if the cell is not already used
-            while not grid.isMoveAllowed(x, y):
+            while not board.possible_moves(x, y):
                 x, y = gui.playerInput(screen)
             print(f"Cell:{(x, y)}")
-            grid.update(x, y, playerTurn.symbole)
-            gui.drawSymbole(screen, (x, y), playerTurn.symbole)
+            board.update(x, y, playerTurn.symbol)
+            gui.drawSymbole(screen, (x, y), playerTurn.symbol)
 
         # Check if there's a winner
-        aligned, _ = alignement(grid.grid)
+        aligned, _ = alignment(board.board)
 
     if(aligned):
         playerTurn.won_games += 1
         return playerTurn
 
-    elif(gridFull(grid.grid)):
+    elif(is_full(board.board)):
         p1.draw_games += 1
         p2.draw_games += 1
         return 0
 
 if __name__ == "__main__":
     inpt = "y"
-    p1 = Player("vic", "X")
-    p2 = Player("AI", "O", isAI=True)
+    p1 = Player("YOU", "X")
+    p2 = Player("AI", "O", AI=True)
     screen = gui.init()
 
     while(inpt != "n"):
 
         # Start the game loop
-        winner = gameLoop(screen, p1, p2)
+        winner = game_loop(screen, p1, p2)
 
         if(winner != 0):
             gui.writeScreen(screen, winner.name + " won!")

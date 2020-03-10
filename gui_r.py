@@ -7,30 +7,18 @@ import time
 
 WHITE = 255, 255, 255
 BLACK = 0, 0, 0
+red = 255, 0, 0
+blue = 0,0,255
 GRAY =  192,192,192
 size = width, height = 480, 480
 cell_width = (width/4)
 cell_height = (height/4)
-font_size = 60
+font_size = 50
 
 def init():        
     pygame.init()
     screen = pygame.display.set_mode(size)
     screen.fill(WHITE)
-
-    def button (display, x, y, width, height, btn_color, action = None):            
-        running = True
-        while running:
-            cur = pygame.mouse.get_pos()
-            click = pygame.mouse.get_pressed()
-            if ((x + width) > cur[0] > x and (y + height) > cur[1] > y):
-                pygame.draw.rect(display, btn_color, (x, y, width, height))
-            running = False
-
-    button(screen, 150, 150, 100, 50, BLACK, action =None)
-    pygame.draw.rect(screen, GRAY, (150, 150, 100, 50))
-
-    refresh()
 
     # Horizontal lines
     for i in range(1, 4):
@@ -98,24 +86,24 @@ def getCell(pos):
 
 def drawSymbole(screen, cell, symbole):  
     if(symbole == "X"):
-        x00 = int(((width/4)*cell[1]))
-        y00 = int(((height/4)*cell[0]))
-        x01 = int(((width/4)*cell[1]) + cell_width)
-        y01 = int(((height/4)*cell[0]) + cell_height)
+        x00 = int(((width/4)*cell[1]) + 15)
+        y00 = int(((height/4)*cell[0]) + 15)
+        x01 = int((((width/4))*cell[1]) + cell_width-15)
+        y01 = int(((height/4)*cell[0]) + cell_height-15)
 
-        x10 = int(((width/4)*cell[1]) + cell_width)
-        y10 = int(((height/4)*cell[0]))
-        x11 = int(((width/4)*cell[1]))
-        y11 = int(((height/4)*cell[0]) + cell_height)
+        x10 = int(((width/4)*cell[1]) + cell_width-15)
+        y10 = int(((height/4)*cell[0]) + 15)
+        x11 = int(((width/4)*cell[1]) + 15)
+        y11 = int(((height/4)*cell[0]) + cell_height-15)
 
-        pygame.draw.line(screen, BLACK, (x00, y00), (x01, y01), 1)
-        pygame.draw.line(screen, BLACK, (x10, y10), (x11, y11), 1)
+        pygame.draw.line(screen, red, (x00, y00), (x01, y01), 4)
+        pygame.draw.line(screen, red, (x10, y10), (x11, y11), 4)
     elif(symbole == "O"):
         # Cell[1] for x because it doesn't change on
         # the line
         x = int(((width/4)*cell[1]) + cell_width/2)
         y = int(((height/4)*cell[0]) + cell_height/2)
-        pygame.draw.circle(screen, BLACK, (x, y), int((width/4/2)*0.9), 1)
+        pygame.draw.circle(screen, blue, (x, y), int((width/4/2)*0.9), 3)
     
     refresh()
 
@@ -156,11 +144,11 @@ def ask(screen, question, line=2):
     sys.exit()
 
 def writeScreen(screen, txt, line=1):
-    # initialize font; must be called after 'pygame.init()' to avoid 'Font not Initialized' error
-    myfont = pygame.font.SysFont("monospace", font_size)
+    
+    myfont = pygame.font.SysFont("monospace", font_size, bold= True)
 
     # render text
-    label = myfont.render(txt, 50, (0,200,0))
+    label = myfont.render(txt, 50, (0, 105, 105))
     screen.blit(label, ((width/2)-(font_size/3)*len(txt), (height/4)*line))
     refresh()
 
