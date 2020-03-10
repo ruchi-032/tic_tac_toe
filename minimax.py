@@ -1,6 +1,5 @@
 import copy 
 import game_r as game
-from game import G
 from math import inf as infinity
 
 max_depth = 9
